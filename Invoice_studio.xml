@@ -1,0 +1,187 @@
+<t t-name="studio_report_document">
+    <div class="page" style="font-family: Arial, sans-serif; font-size: 12px;">
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                font-size: 12px;
+            }
+
+            .kotak-teks {
+                border: 1px solid black;
+                padding: 8px;
+            }
+
+            .invoice-header {
+                text-align: center;
+                margin-bottom: 20px;
+                margin-top: 50px;
+            }
+            
+            .invoice-header h1 {
+                font-size: 23px;
+                font-style: italic;
+                font-weight: normal;
+                display: inline-block;
+                margin: 0 15px;
+            }
+
+            .header-line {
+                display: inline-block;
+                width: 30%;
+                border-top: 2px solid black;
+                vertical-align: middle;
+            }
+            
+            .invoice-box {
+                border: 2px solid black;
+                padding: 15px;
+                box-sizing: border-box;
+                /* Menghapus height statis agar lebih fleksibel */
+                min-height: 150px; 
+            }
+
+            .invoice-box .field-label {
+                font-weight: bold;
+            }
+            
+            .all-border-table, .all-border-table th, .all-border-table td {
+                border: 1px solid black !important;
+                border-collapse: collapse;
+                padding: 5px;
+            }
+            
+            .totals-table {
+                width: 100%;
+            }
+            .totals-table td {
+                padding: 2px 5px;
+            }
+        </style>
+
+        <div class="row mb-4">
+            <div class="col-7"/>
+            <div class="col-5">
+                <div class="text-left" style="font-size: 12px;">
+                    Invoice    :
+                    <span style="color: red !important" t-field="doc.name"/>
+                    <br/>
+                    Date        :
+                    <span t-field="doc.invoice_date" t-options="{&quot;widget&quot;: &quot;date&quot;, &quot;format&quot;: &quot;dd MMMM yyyy&quot;}"/>
+                </div>
+            </div>
+        </div>
+
+        <div class="invoice-header">
+            <div class="header-line"/>
+            <h1>INVOICE</h1>
+            <div class="header-line"/>
+        </div>
+
+        <div class="row">
+            <div class="col-7" style="padding-right: 10px;">
+                <div class="invoice-box">
+                    <div class="field-value">
+                        <span class="field-label">Customer</span>
+                    </div>
+                    <div><span class="field-label">Name:</span> <span t-field="doc.partner_id.name"/></div>
+                    <div><span class="field-label">Address:</span> <span t-field="doc.partner_id.street"/></div>
+                    <div><span class="field-label">Phone:</span> <span t-field="doc.partner_id.phone"/></div>
+                    <div><span class="field-label">NPWP:</span> <span t-field="doc.partner_id.vat"/></div>
+                </div>
+            </div>
+            
+            <div class="col-5" style="padding-left: 10px;">
+                <div class="invoice-box">
+                    <div class="field-value">
+                        <span class="field-label">References</span>
+                    </div>
+                    <div><span class="field-label">Contract No:</span> <span t-field="doc.name"/></div>
+                    <div><span class="field-label">Date:</span> <span t-field="doc.invoice_date" t-options="{&quot;widget&quot;: &quot;date&quot;}"/></div>
+                    <div><span class="field-label">Memorandum:</span> Belum tahu isi apa</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 50px;">
+            <table class="table table-sm o_main_table all-border-table">
+                 <thead>
+                    <tr>
+                        <th class="text-center" style="width: 5%;">No</th>
+                        <th style="width: 40%;">Description</th>
+                        <th class="text-right" style="width: 10%;">Quantity</th>
+                        <th class="text-right" style="width: 20%;">Unit Price</th>
+                        <th class="text-right" style="width: 25%;">Amount</th>
+                    </tr>
+                </thead>
+                <t t-set="no" t-value="0"/>
+                <tbody>
+                    <t t-foreach="doc.invoice_line_ids" t-as="line">
+                        <tr>
+                            <td class="text-center">
+                                <t t-set="no" t-value="no+1"/>
+                                <span t-esc="no"/>
+                            </td>
+                            <td><span t-field="line.name"/></td>
+                            <td class="text-right"><span t-field="line.quantity"/></td>
+                            <td class="text-right"><span t-field="line.price_unit" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/></td>
+                            <td class="text-right"><span t-field="line.price_subtotal" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/></td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="row" style="margin-top: 15px;">
+            <div class="col-7" style="padding-right: 10px;">
+                <div class="kotak-teks">
+                    <strong>Terbilang:</strong>
+                    <i><span t-esc="doc.currency_id.with_context(lang=doc.partner_id.lang).amount_to_text(doc.amount_total)"/></i>
+                </div>
+            </div>
+
+            <div class="col-5" style="padding-left: 10px;">
+                <table class="totals-table">
+                    <tr>
+                        <td>Subtotal:</td>
+                        <td class="text-right"><span t-field="doc.amount_untaxed" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/></td>
+                    </tr>
+                    <tr>
+                        <td>Discount:</td>
+                        <td class="text-right">Rp 0.00</td>
+                    </tr>
+                    <tr style="border-top: 1px solid black;">
+                        <td><strong>Total IDR Excl. VAT:</strong></td>
+                        <td class="text-right"><span t-field="doc.amount_untaxed" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/></td>
+                    </tr>
+                    <tr>
+                        <td>VAT:</td>
+                        <td class="text-right"><span t-field="doc.amount_tax" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/></td>
+                    </tr>
+                     <tr style="border-top: 1px solid black;">
+                        <td><strong>Amount Paid:</strong></td>
+                        <td class="text-right"><span t-field="doc.amount_total" t-options="{&quot;widget&quot;: &quot;monetary&quot;, &quot;display_currency&quot;: doc.currency_id}"/></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="row" style="margin-top: 20px;">
+             <div class="col-7" style="padding-right: 10px;">
+                <span style="border: 1px solid black; padding: 8px; display: inline-block;">
+                    <strong><em><u>Please Remit payment to:<br/></u></em></strong>
+                    PT. TRUELOGS GEO ENERGI<br/>
+                    Bank Mandiri Kantor Cabang Percetakan Negara<br/>
+                    Rek USD : 006 000 737 514 4<br/>
+                    Rek IDR : 006 000 737 513 6
+                </span>
+            </div>
+             <div class="col-5 text-centerding-left: 10px;">
+                <div style="height: 60px;"/>
+                <br/>
+                <span>________________________________________
+                     <strong>Ferga Maulia<br/></strong>Finance Manager
+                </span>
+            </div>
+        </div>
+    </div>
+</t>
